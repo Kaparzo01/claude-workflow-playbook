@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Claude Workflow Playbook — Idea → Ship</title>
+<meta name="description" content="The interactive 5-phase playbook for building apps with Claude Desktop and Claude Code. From idea to shipped product.">
+<meta property="og:title" content="Claude Workflow Playbook — Idea → Ship">
+<meta property="og:description" content="The interactive 5-phase playbook for building apps with Claude Desktop and Claude Code.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #0f1729;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border-subtle: rgba(255,255,255,0.08);
+    --border-light: rgba(255,255,255,0.06);
+    --surface: rgba(255,255,255,0.03);
+    --surface-hover: rgba(255,255,255,0.06);
+    
+    --yellow: #F59E0B; --yellow-bg: #FEF3C7;
+    --purple: #8B5CF6; --purple-bg: #EDE9FE;
+    --blue: #3B82F6;   --blue-bg: #DBEAFE;
+    --green: #10B981;  --green-bg: #D1FAE5;
+    --red: #EF4444;    --red-bg: #FEE2E2;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(165deg, var(--bg-primary) 0%, var(--bg-secondary) 40%, #0a0f1a 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  code, .mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace; }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+  /* Header */
+  .header { padding: 32px 24px 20px; text-align: center; }
+  .header-label { font-size: 12px; font-weight: 700; letter-spacing: 0.15em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+  .header-title {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #F59E0B, #8B5CF6, #3B82F6, #10B981);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-sub { color: var(--text-muted); font-size: 13px; margin-top: 6px; }
+
+  /* Phase selector */
+  .phase-selector { display: flex; gap: 8px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .phase-selector::-webkit-scrollbar { display: none; }
+
+  .phase-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 10px; min-width: 85px; flex: 1;
+    background: var(--surface); border: 2px solid var(--border-subtle);
+    border-radius: 14px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; overflow: hidden;
+  }
+  .phase-btn:hover { background: var(--surface-hover); }
+  .phase-btn.active { border-color: var(--phase-color); }
+  .phase-btn .icon { font-size: 26px; }
+  .phase-btn .label { font-size: 12px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-muted); transition: color 0.2s; }
+  .phase-btn.active .label { color: var(--phase-color); }
+  .phase-btn .bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--phase-color); border-radius: 2px 2px 0 0; opacity: 0; transition: opacity 0.2s; }
+  .phase-btn.active .bar { opacity: 1; }
+
+  /* Arrows */
+  .arrows { display: flex; justify-content: center; padding: 4px 0; gap: 80px; }
+  .arrows span { color: #334155; font-size: 10px; }
+
+  /* Phase detail */
+  .phase-detail { padding: 0 16px 24px; }
+  .phase-card {
+    border-radius: 18px; padding: 22px;
+    border: 1px solid color-mix(in srgb, var(--phase-color) 20%, transparent);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--phase-color) 3%, transparent), color-mix(in srgb, var(--phase-color) 1%, transparent));
+  }
+
+  .phase-header { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .phase-header .big-icon { font-size: 36px; }
+  .phase-title { font-size: 22px; font-weight: 800; }
+  .phase-meta { display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+  .phase-meta .tag { font-size: 11.5px; color: var(--text-secondary); background: var(--surface-hover); padding: 2px 8px; border-radius: 6px; }
+  .phase-goal { color: #cbd5e1; font-size: 14px; line-height: 1.6; margin: 12px 0 20px; font-style: italic; }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step { background: var(--surface); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden; transition: all 0.2s; }
+  .step-header { width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px 18px; text-align: left; }
+  .step-num {
+    width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; flex-shrink: 0;
+    border: 2px solid var(--phase-color);
+    background: color-mix(in srgb, var(--phase-color) 13%, transparent);
+    color: var(--phase-color);
+  }
+  .step-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .step-chevron { font-size: 18px; color: var(--text-muted); transition: transform 0.2s; }
+  .step.open .step-chevron { transform: rotate(180deg); }
+  .step-body { padding: 0 18px 18px 62px; display: none; }
+  .step.open .step-body { display: block; }
+  .step-detail { color: var(--text-secondary); font-size: 13.5px; line-height: 1.7; }
+
+  /* Prompt block */
+  .prompt-block {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 10px; padding: 14px 16px; margin-top: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .prompt-block pre {
+    color: var(--text-primary); font-size: 12.5px; line-height: 1.65;
+    white-space: pre-wrap; word-break: break-word; flex: 1; margin: 0;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+  .copy-btn {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px; padding: 4px 10px; color: #fff; font-size: 11px;
+    font-weight: 600; letter-spacing: 0.02em; transition: all 0.2s; flex-shrink: 0;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.25); }
+  .copy-btn.copied { background: #10B981; }
+
+  /* Anti-patterns */
+  .avoid-box { margin-top: 20px; padding: 14px 16px; background: rgba(239,68,68,0.08); border-radius: 12px; border: 1px solid rgba(239,68,68,0.15); }
+  .avoid-label { font-size: 12px; font-weight: 700; color: #EF4444; margin-bottom: 8px; letter-spacing: 0.05em; }
+  .avoid-item { font-size: 12.5px; color: #f87171; line-height: 1.6; padding-left: 14px; position: relative; }
+  .avoid-item::before { content: '✗'; position: absolute; left: 0; }
+
+  /* Commands */
+  .cmd-box { margin-top: 16px; padding: 14px 16px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border-light); }
+  .cmd-label { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 0.05em; }
+  .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+  .cmd-item { display: flex; gap: 8px; align-items: baseline; }
+  .cmd-item code { font-size: 11.5px; font-weight: 600; white-space: nowrap; color: var(--phase-color); }
+  .cmd-item .cmd-desc { font-size: 11px; color: var(--text-muted); }
+
+  /* Reference cards */
+  .ref-section { padding: 0 16px 32px; }
+  .ref-btns { display: flex; gap: 10px; }
+  .ref-btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1px solid var(--border-subtle); background: var(--surface); transition: all 0.2s; }
+  .ref-btn:hover { background: var(--surface-hover); }
+  .ref-btn.active-thinking { background: rgba(139,92,246,0.12); border-color: #8B5CF6; }
+  .ref-btn.active-models { background: rgba(59,130,246,0.12); border-color: #3B82F6; }
+
+  .ref-panel { margin-top: 12px; border-radius: 14px; padding: 18px; display: none; }
+  .ref-panel.visible { display: block; }
+  .ref-panel.thinking { background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.2); }
+  .ref-panel.models { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); }
+
+  .ref-row { display: flex; gap: 14px; align-items: center; padding: 10px 0; }
+  .ref-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ref-keyword { font-size: 13px; font-weight: 700; min-width: 100px; }
+  .ref-tokens { font-size: 11.5px; color: var(--text-muted); min-width: 50px; }
+  .ref-use { font-size: 12.5px; color: var(--text-secondary); }
+  .ref-task { font-size: 12.5px; font-weight: 600; min-width: 140px; }
+  .ref-model { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+  .ref-model.opus { background: rgba(239,68,68,0.15); color: #f87171; }
+  .ref-model.sonnet { background: rgba(16,185,129,0.15); color: #34d399; }
+  .ref-reason { font-size: 12px; color: var(--text-muted); }
+
+  /* Footer */
+  .footer { text-align: center; padding: 0 16px 32px; }
+  .footer p { font-size: 11px; color: #334155; }
+  .footer code { color: var(--text-muted); }
+  .footer a { color: var(--blue); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* Mobile tweaks */
+  @media (max-width: 500px) {
+    .phase-btn { min-width: 68px; padding: 12px 6px; }
+    .phase-btn .icon { font-size: 22px; }
+    .phase-btn .label { font-size: 10px; }
+    .header-title { font-size: 24px; }
+    .phase-title { font-size: 18px; }
+    .cmd-grid { grid-template-columns: 1fr; }
+    .ref-row { flex-wrap: wrap; gap: 6px; }
+    .arrows { gap: 50px; }
+  }
+
+  /* Smooth appear animation */
+  @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .phase-card { animation: fadeSlideIn 0.3s ease-out; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Claude Workflow</div>
+  <h1 class="header-title">Idea → Ship Playbook</h1>
+  <p class="header-sub">Tap a phase below. Expand each step for copy-paste prompts.</p>
+</div>
+
+<div class="phase-selector" id="phaseSelector"></div>
+
+<div class="arrows"><span>▼</span><span>▼</span><span>▼</span><span>▼</span></div>
+
+<div class="phase-detail" id="phaseDetail"></div>
+
+<div class="ref-section">
+  <div class="ref-btns">
+    <button class="ref-btn" id="thinkingBtn" onclick="toggleRef('thinking')">🧠 Thinking Guide</button>
+    <button class="ref-btn" id="modelsBtn" onclick="toggleRef('models')">🤖 Model Guide</button>
+  </div>
+  <div class="ref-panel thinking" id="thinkingPanel"></div>
+  <div class="ref-panel models" id="modelsPanel"></div>
+</div>
+
+<div class="footer">
+  <p>Run <code>bash scaffold.sh</code> to set up a new project with all templates, hooks, and agents pre-configured.</p>
+  <p style="margin-top:6px">Built with Claude · <a href="https://github.com" target="_blank">Get the scaffold script →</a></p>
+</div>
+
+<script>
+const phases = [
+  {
+    id:1, name:"Ideate", icon:"💡", where:"Claude Desktop / claude.ai", color:"#F59E0B", bgColor:"#FEF3C7",
+    duration:"15-30 min", goal:"Go from vague idea to sharp specification",
+    steps:[
+      {title:"Create a Project", detail:"In Claude Desktop, create a new Project for your app. Upload any reference materials, competitor screenshots, or existing code.", prompt:null},
+      {title:"Get interviewed", detail:"Don't describe your solution. Describe the problem and let Claude interview you. This surfaces requirements you haven't thought of.", prompt:"Interview me about my idea for [YOUR IDEA]. Ask probing questions about target users, core features, edge cases, and technical constraints. Ask one question at a time."},
+      {title:"Architecture document", detail:"After the interview, ask for a written architecture doc. Use 'think hard' or 'ultrathink' for complex decisions.", prompt:"Based on our discussion, write an architecture document covering: tech stack recommendation with rationale, data model, key components and their responsibilities, and API surface area. Ultrathink."},
+      {title:"Save to research.md", detail:"Copy the architecture output into docs/research.md in your scaffolded project. This becomes the handoff artifact.", prompt:null}
+    ],
+    antiPatterns:["Jumping straight to 'build me a todo app'","Skipping the interview — you'll miss edge cases","Using standard thinking for architecture decisions"]
+  },
+  {
+    id:2, name:"Prototype", icon:"🎨", where:"Claude Desktop Artifacts", color:"#8B5CF6", bgColor:"#EDE9FE",
+    duration:"10-20 min", goal:"Validate UI direction with interactive prototypes",
+    steps:[
+      {title:"Generate first prototype", detail:"Describe the main screen. Claude creates a working HTML/React artifact in ~30 seconds.", prompt:"Build an interactive prototype of the main dashboard for [YOUR APP]. Include a sidebar with navigation, a data table with sorting and filtering, and a summary stats bar at the top. Use realistic placeholder data."},
+      {title:"Iterate rapidly", detail:"Make 5-10 variations. Each iteration takes seconds. Try different layouts, color schemes, and interactions.", prompt:"Make the sidebar collapsible with an animation. Add a dark mode toggle. Show a loading skeleton state."},
+      {title:"Screenshot-to-prototype", detail:"Paste a screenshot of any UI (competitor, Dribbble, whiteboard sketch) and Claude will generate a functional replica.", prompt:"[paste screenshot] Match this design as closely as possible. Make all interactive elements functional."},
+      {title:"Lock the direction", detail:"When satisfied, screenshot the final prototype. This is your visual spec — more precise than any written description.", prompt:null}
+    ],
+    antiPatterns:["Treating artifact code as production code","Spending too long perfecting — this is validation, not final design","Not trying enough variations (aim for 5+)"]
+  },
+  {
+    id:3, name:"Plan", icon:"📋", where:"Claude Code → Plan Mode", color:"#3B82F6", bgColor:"#DBEAFE",
+    duration:"20-60 min", goal:"Create a bulletproof, annotated implementation plan",
+    steps:[
+      {title:"Enter Plan Mode", detail:"Press Shift+Tab twice (or type /plan). In this mode, Claude reads files and plans without making changes.", prompt:null},
+      {title:"Explore the codebase", detail:"Have Claude read relevant directories and understand existing patterns before proposing anything new.", prompt:'Read the src/ directory and docs/research.md. Understand the architecture and patterns we\'ve established. Write your findings to docs/research.md under "Technical Research".'},
+      {title:"Generate the plan", detail:"Ask for a detailed plan with file paths, code snippets, dependencies, and trade-offs.", prompt:"Create a detailed implementation plan in docs/plan.md for [FEATURE]. Include: specific file paths for every change, code snippets showing key logic, a dependency graph, trade-off analysis for each decision, and a testing strategy."},
+      {title:"Annotate the plan (repeat 1-6x)", detail:"This is THE key step. Open plan.md in your editor. Add inline comments. Send Claude back to address your notes WITHOUT implementing.", prompt:'I added annotations to docs/plan.md. Read the file, address every annotation marked with "YOUR ANNOTATION". Update the plan but do NOT implement anything yet.'},
+      {title:"Approve", detail:"When the plan is solid (usually 2-3 annotation cycles), give the green light.", prompt:"The plan is approved. Switch to normal mode and implement it all, starting with step 1."}
+    ],
+    antiPatterns:["Skipping annotation cycles — the #1 cause of bad output","Plans without file paths — Claude will guess wrong","Plans without trade-offs — you'll regret it later","Implementing during planning — stay in Plan Mode"]
+  },
+  {
+    id:4, name:"Build", icon:"🔨", where:"Claude Code → Normal Mode", color:"#10B981", bgColor:"#D1FAE5",
+    duration:"Variable", goal:"Execute the plan. Implementation should feel boring.",
+    steps:[
+      {title:"Clean git state", detail:"Always start from a clean commit. This lets you revert the entire feature cleanly if needed.", prompt:null},
+      {title:"Implement from plan", detail:"For straightforward plans, enable auto-accept (Shift+Tab once) and let Claude work. For complex plans, implement step by step.", prompt:"Implement the approved plan from docs/plan.md. Start with step 1 and work through each step in order. Commit after each step."},
+      {title:"Use subagents for parallel work", detail:"For complex features, spawn subagents to work on different parts simultaneously.", prompt:"Spawn a subagent to implement the frontend components from steps 1-3 of the plan. Spawn another subagent for the API endpoints in steps 4-6. I'll write tests for both."},
+      {title:"Manage context", detail:"Context fills up fast. Use /compact at 50%, Document & Clear for task switches.", prompt:null}
+    ],
+    antiPatterns:["Implementing without an approved plan","Letting context fill to 100% — quality drops sharply","Not committing between steps — makes reverts painful","Fighting a bad approach instead of reverting"],
+    commands:[
+      {cmd:"/compact", desc:"Compress context at ~50%"},
+      {cmd:"/clear", desc:"Fresh context (save first!)"},
+      {cmd:"/model opus", desc:"Switch for hard problems"},
+      {cmd:"/model sonnet", desc:"Back for implementation"},
+      {cmd:"Shift+Tab ×1", desc:"Auto-accept mode"},
+      {cmd:"Shift+Tab ×2", desc:"Plan mode (read-only)"}
+    ]
+  },
+  {
+    id:5, name:"Verify", icon:"✅", where:"Hooks + Subagents + CI", color:"#EF4444", bgColor:"#FEE2E2",
+    duration:"10-20 min", goal:"Catch bugs before they ship. 2-3x quality improvement.",
+    steps:[
+      {title:"Run tests", detail:"If tests exist, run them. If they don't, write them first.", prompt:"Run all tests. If any fail, fix them. If no tests exist for the new code, write unit tests for every new function and integration tests for every new API endpoint."},
+      {title:"Code review via subagent", detail:"Use the reviewer subagent to get a fresh-eyes review.", prompt:"Use the reviewer agent to review all changes since the last commit. Flag any bugs, security issues, or code smells."},
+      {title:"Browser test (if applicable)", detail:"With Playwright MCP configured, Claude can test the actual UI.", prompt:"Open the app in a browser and test the complete [FEATURE] flow. Click through every state. Report any visual bugs or broken interactions."},
+      {title:"Ship it", detail:"Commit, push, create PR — all in one command.", prompt:null}
+    ],
+    antiPatterns:["Skipping tests — this is where the 2-3x quality gain comes from","Only testing the happy path","Not reviewing before pushing"],
+    commands:[{cmd:"/commit-push-pr", desc:"Commit, push, and create PR"}]
+  }
+];
+
+const thinkingData = [
+  {keyword:'"think"', tokens:"~4K", use:"Simple decisions, quick analysis"},
+  {keyword:'"think hard"', tokens:"~10K", use:"Architecture, trade-offs, debugging"},
+  {keyword:'"ultrathink"', tokens:"~32K", use:"Complex system design, major refactors"}
+];
+
+const modelData = [
+  {task:"Standard implementation", model:"Sonnet", reason:"Fast + cheap, handles 80% of work"},
+  {task:"Architecture decisions", model:"Opus", reason:"Deeper reasoning for trade-offs"},
+  {task:"Large refactors", model:"Opus", reason:"Better at 10K+ line changes"},
+  {task:"Writing tests", model:"Sonnet", reason:"Pattern-matching task"},
+  {task:"Multi-agent coordination", model:"Opus", reason:"Better orchestration"}
+];
+
+let activePhase = 0;
+let activeRef = null;
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function toggleStep(el) {
+  el.closest('.step').classList.toggle('open');
+}
+
+function setPhase(index) {
+  activePhase = index;
+  renderSelector();
+  renderDetail();
+}
+
+function toggleRef(type) {
+  activeRef = activeRef === type ? null : type;
+  renderRefs();
+}
+
+function renderSelector() {
+  const container = document.getElementById('phaseSelector');
+  container.innerHTML = phases.map((p, i) => `
+    <button class="phase-btn ${i === activePhase ? 'active' : ''}" style="--phase-color:${p.color};${i === activePhase ? `background:${p.bgColor}15;` : ''}" onclick="setPhase(${i})">
+      <div class="bar"></div>
+      <span class="icon">${p.icon}</span>
+      <span class="label">${p.name}</span>
+    </button>
+  `).join('');
+}
+
+function renderDetail() {
+  const p = phases[activePhase];
+  const container = document.getElementById('phaseDetail');
+  container.innerHTML = `
+    <div class="phase-card" style="--phase-color:${p.color};">
+      <div class="phase-header">
+        <span class="big-icon">${p.icon}</span>
+        <div>
+          <h2 class="phase-title" style="color:${p.color}">Phase ${p.id}: ${p.name}</h2>
+          <div class="phase-meta">
+            <span class="tag">📍 ${p.where}</span>
+            <span class="tag">⏱ ${p.duration}</span>
+          </div>
+        </div>
+      </div>
+      <p class="phase-goal">Goal: ${p.goal}</p>
+      <div class="steps">
+        ${p.steps.map((s, i) => `
+          <div class="step" style="--phase-color:${p.color}">
+            <button class="step-header" onclick="toggleStep(this)">
+              <div class="step-num">${i+1}</div>
+              <span class="step-title">${s.title}</span>
+              <span class="step-chevron">▾</span>
+            </button>
+            <div class="step-body">
+              <p class="step-detail">${s.detail}</p>
+              ${s.prompt ? `
+                <div class="prompt-block">
+                  <pre>${escapeHtml(s.prompt)}</pre>
+                  <button class="copy-btn" onclick="copyText(this, ${escapeAttr(JSON.stringify(s.prompt))})">Copy</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      ${p.antiPatterns ? `
+        <div class="avoid-box">
+          <div class="avoid-label">⚠ AVOID</div>
+          ${p.antiPatterns.map(a => `<div class="avoid-item">${a}</div>`).join('')}
+        </div>
+      ` : ''}
+      ${p.commands ? `
+        <div class="cmd-box">
+          <div class="cmd-label">⌨ QUICK COMMANDS</div>
+          <div class="cmd-grid">
+            ${p.commands.map(c => `
+              <div class="cmd-item">
+                <code style="color:${p.color}">${c.cmd}</code>
+                <span class="cmd-desc">${c.desc}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderRefs() {
+  const tb = document.getElementById('thinkingBtn');
+  const mb = document.getElementById('modelsBtn');
+  const tp = document.getElementById('thinkingPanel');
+  const mp = document.getElementById('modelsPanel');
+
+  tb.className = `ref-btn ${activeRef === 'thinking' ? 'active-thinking' : ''}`;
+  mb.className = `ref-btn ${activeRef === 'models' ? 'active-models' : ''}`;
+
+  tp.className = `ref-panel thinking ${activeRef === 'thinking' ? 'visible' : ''}`;
+  mp.className = `ref-panel models ${activeRef === 'models' ? 'visible' : ''}`;
+
+  tp.innerHTML = thinkingData.map(t => `
+    <div class="ref-row">
+      <code class="ref-keyword" style="color:#8B5CF6">${t.keyword}</code>
+      <span class="ref-tokens">${t.tokens}</span>
+      <span class="ref-use">${t.use}</span>
+    </div>
+  `).join('');
+
+  mp.innerHTML = modelData.map(m => `
+    <div class="ref-row">
+      <span class="ref-task">${m.task}</span>
+      <span class="ref-model ${m.model.toLowerCase()}">${m.model}</span>
+      <span class="ref-reason">${m.reason}</span>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeAttr(s) { return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
+// Init
+renderSelector();
+renderDetail();
+renderRefs();
+</script>
+</body>
+</html>
